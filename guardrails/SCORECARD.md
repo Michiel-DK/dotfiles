@@ -43,3 +43,4 @@ weekly scheduled agent (/schedule) runs the cross-repo drift audit
 | date | guardrail_cov | chokepoint_cov | drift | gate_catches/wk | escaped |
 |---|---|---|---|---|---|
 | 2026-06-30 | 0/5 | 2/4 | ≥3 | n/a (no gate yet) | 4 |
+| 2026-07-01 | 0/4 | - | 83 | - | - |
