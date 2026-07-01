@@ -1,0 +1,38 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!--
+  Weekly deterministic drift check — free, local, no tokens.
+  Install:
+    cp guardrails/com.michieldk.guardrails-drift.plist ~/Library/LaunchAgents/
+    launchctl load ~/Library/LaunchAgents/com.michieldk.guardrails-drift.plist
+  Uninstall:
+    launchctl unload ~/Library/LaunchAgents/com.michieldk.guardrails-drift.plist
+  Runs Monday 09:00; appends a row to guardrails/SCORECARD.md; logs below.
+  NOTE: edit the path below if your dotfiles live somewhere other than ~/code/Michiel-DK/dotfiles.
+-->
+<plist version="1.0">
+<dict>
+    <key>Label</key>
+    <string>com.michieldk.guardrails-drift</string>
+    <key>ProgramArguments</key>
+    <array>
+        <string>/bin/bash</string>
+        <string>-lc</string>
+        <string>"$HOME/code/Michiel-DK/dotfiles/guardrails/drift_check.sh" --write</string>
+    </array>
+    <key>StartCalendarInterval</key>
+    <dict>
+        <key>Weekday</key>
+        <integer>1</integer>
+        <key>Hour</key>
+        <integer>9</integer>
+        <key>Minute</key>
+        <integer>0</integer>
+    </dict>
+    <key>StandardOutPath</key>
+    <string>/tmp/guardrails-drift.log</string>
+    <key>StandardErrorPath</key>
+    <string>/tmp/guardrails-drift.err</string>
+    <key>RunAtLoad</key>
+    <false/>
+</dict>
+</plist>
