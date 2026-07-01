@@ -1,0 +1,13 @@
+# Canonical ruff config. Copy/symlink to <repo>/ruff.toml.
+line-length = 100
+target-version = "py311"
+
+[lint]
+# Sensible starter set; tighten per repo, but keep the base here.
+select = ["E", "F", "I", "B", "UP", "SIM"]
+# SIM105 (suppressible with contextlib.suppress) is intentionally NOT ignored —
+# it nudges away from silent `except: pass`, which is the whole point.
+ignore = []
+
+[format]
+quote-style = "double"

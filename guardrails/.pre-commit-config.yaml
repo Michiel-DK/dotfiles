@@ -1,0 +1,29 @@
+# Canonical pre-commit gate — copy to <repo>/.pre-commit-config.yaml (or symlink).
+# One source of truth: edit HERE, re-sync repos. See guardrails/README.md.
+#
+#   pipx install pre-commit && pre-commit install   # once per repo
+#
+repos:
+  # --- style/lint, enforced mechanically (no willpower) ---
+  - repo: https://github.com/astral-sh/ruff-pre-commit
+    rev: v0.6.9
+    hooks:
+      - id: ruff          # lint, --fix
+        args: [--fix]
+      - id: ruff-format   # format
+
+  # --- secrets: kills the .env / API-key class before it lands ---
+  - repo: https://github.com/gitleaks/gitleaks
+    rev: v8.21.1
+    hooks:
+      - id: gitleaks
+
+  # --- fail-loud: flag silent fallbacks (the #1 bug class, 4/5 repos) ---
+  # Custom hook, sourced from this template so every repo shares it.
+  - repo: local
+    hooks:
+      - id: fail-loud
+        name: fail-loud (no silent fallbacks at data seams)
+        entry: python guardrails/hooks/fail_loud_check.py
+        language: system
+        types: [python]

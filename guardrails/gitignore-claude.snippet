@@ -1,0 +1,11 @@
+# --- Canonical .claude/ ignore block. Paste into each repo's .gitignore. ---
+# Ignore contents by default, but auto-track durable, reusable assets.
+# Use `.claude/*` (NOT `.claude/`) so git descends and the `!` re-includes work —
+# git will not descend into a fully-ignored directory, so `!.claude/x/` under a
+# bare `.claude/` silently does nothing.
+.claude/*
+!.claude/agents/
+!.claude/hooks/
+!.claude/skills/
+!.claude/workflows/
+# .claude/worktrees/ is intentionally left ignored (agent worktrees, not assets).
