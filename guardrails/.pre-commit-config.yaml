@@ -5,6 +5,13 @@
 #
 repos:
   # --- style/lint, enforced mechanically (no willpower) ---
+  #
+  # LEGACY-REPO ADOPTION: ruff reports on the WHOLE changed file, and ruff-format
+  # would reformat an entire legacy file on first touch → a wall of red / huge diff.
+  # For an existing repo, do a ONE-TIME baseline first, then enforce:
+  #     ruff format . && ruff check --fix . && git commit -m "chore: ruff baseline"
+  # Only after that baseline is committed should ruff run in the gate. For a NEW
+  # (clean) repo, leave both hooks on from day one.
   - repo: https://github.com/astral-sh/ruff-pre-commit
     rev: v0.6.9
     hooks:
@@ -20,10 +27,13 @@ repos:
 
   # --- fail-loud: flag silent fallbacks (the #1 bug class, 4/5 repos) ---
   # Custom hook, sourced from this template so every repo shares it.
+  # `--diff` = RATCHET mode: only flags lines THIS commit adds, so pre-existing
+  # violations in a legacy repo are grandfathered (safe to turn on day one).
   - repo: local
     hooks:
       - id: fail-loud
-        name: fail-loud (no silent fallbacks at data seams)
-        entry: python guardrails/hooks/fail_loud_check.py
+        name: fail-loud (no NEW silent fallbacks at data seams)
+        entry: python guardrails/hooks/fail_loud_check.py --diff
         language: system
         types: [python]
+        pass_filenames: false   # the hook reads the staged diff itself

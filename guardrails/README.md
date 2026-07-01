@@ -25,12 +25,22 @@ cat ~/code/Michiel-DK/dotfiles/guardrails/gitignore-claude.snippet >> .gitignore
 pipx install pre-commit && pre-commit install
 ```
 
+**Legacy repo vs clean repo — they adopt differently:**
+- `fail-loud` runs in `--diff` (ratchet) mode: it only flags lines a commit *adds*,
+  so pre-existing violations are grandfathered. **Safe to turn on day one, any repo.**
+- `ruff` reports on whole changed files and would reformat a legacy file on first
+  touch. For an **existing** repo, commit a one-time baseline first
+  (`ruff format . && ruff check --fix . && git commit -m "chore: ruff baseline"`),
+  *then* let the gate enforce. For a **new** repo, leave ruff on from the start.
+
 **Don't hand-maintain the copies.** The canonical version lives HERE; edit here,
-re-sync. Two cleaner upgrades when you're ready:
+re-sync. One cleaner upgrade when you're ready:
 - **Remote pre-commit hooks** — publish `hooks/` as its own repo; each
   `.pre-commit-config.yaml` references it by URL. Update once → every repo updates.
-- **`Michiel-DK/.github` org repo** — GitHub auto-applies org-default workflows +
-  community-health files to every repo. Native "same CI everywhere".
+- ~~`Michiel-DK/.github` org repo~~ — **does NOT apply here.** Org default-workflows
+  are an *organization* feature; `Michiel-DK` is a personal User account, so a
+  personal `.github` repo only serves a profile README + community-health templates,
+  not auto-applied CI. (Corrected 2026-07-01.)
 
 ## The continuous loop
 
