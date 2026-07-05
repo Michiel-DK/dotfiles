@@ -25,6 +25,17 @@ for name in *; do
   fi
 done
 
+# Cline plan/build lane lives at ~/.cline/lane.sh (nested, so the loop above skips it).
+# ~/.cline/ also holds Cline's own runtime (data/, hooks/, memory/) — track ONLY lane.sh.
+if [ -f "$PWD/cline/lane.sh" ]; then
+  mkdir -p "$HOME/.cline"
+  backup "$HOME/.cline/lane.sh"
+  if [ ! -e "$HOME/.cline/lane.sh" ]; then
+    echo "-----> Symlinking $HOME/.cline/lane.sh"
+    ln -s "$PWD/cline/lane.sh" "$HOME/.cline/lane.sh"
+  fi
+fi
+
 # Git commit editor -> VS Code (requires the `code` shell command on PATH).
 git config --global core.editor "code --wait"
 
