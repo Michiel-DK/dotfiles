@@ -103,7 +103,8 @@ $diff"
 #     3. the resolved test command exits 0   (no test command found => ABORT — never ship untested)
 #   Advisory (printed, does NOT gate — model output is too noisy to hard-gate on): cverify review.
 #   Then: git push -u origin <branch> && gh pr create --fill --base <base>.
-#   --watch: after PR, wait for CI (gh pr checks) and record pass/fail to agentmemory.
+#   --watch: after PR, wait for CI (gh pr checks) and record pass AND fail — to agentmemory
+#            (best-effort) and to docs/run-ledger.jsonl (the countable record).
 #
 #   Test command resolution (first hit wins): $CLINE_TEST_CMD > ./.cline/test.sh > detect(pytest|npm test|make test)
 cship() {
@@ -171,13 +172,22 @@ cship() {
   if [ "$watch" -eq 1 ]; then
     echo "cship: ── watching CI ──"
     local proj; proj=$(basename "$(git rev-parse --show-toplevel)")
+    local result
     if gh pr checks --watch --interval 30; then
-      echo "cship: ✅ CI green"
+      echo "cship: ✅ CI green"; result="green"
     else
-      echo "cship: ❌ CI RED — fix before merge"
-      local url; url=$(gh pr view --json url -q .url 2>/dev/null)
-      curl -s -m 4 -X POST http://localhost:3111/agentmemory/observe -H "Content-Type: application/json" \
-        -d "{\"hookType\":\"post_tool_use\",\"sessionId\":\"cship\",\"project\":\"$proj\",\"data\":{\"tool_name\":\"cship_ci_result\",\"tool_output\":\"CI FAILED for ${url:-$branch} (base $base)\"}}" >/dev/null 2>&1 || true
+      echo "cship: ❌ CI RED — fix before merge"; result="red"
     fi
+    # Record BOTH outcomes. Logging only failures gives a numerator with no denominator —
+    # no pass rate can be computed from it. This feeds the harness outcome ledger.
+    local url; url=$(gh pr view --json url -q .url 2>/dev/null)
+    curl -s -m 4 -X POST http://localhost:3111/agentmemory/observe -H "Content-Type: application/json" \
+      -d "{\"hookType\":\"post_tool_use\",\"sessionId\":\"cship\",\"project\":\"$proj\",\"data\":{\"tool_name\":\"cship_ci_result\",\"tool_output\":\"CI ${result} for ${url:-$branch} (base $base)\"}}" >/dev/null 2>&1 || true
+    # Ledger lives OUTSIDE the repo, deliberately. An in-repo append would leave the working
+    # tree dirty after every ship, and gate 1 above (clean tree, no auto-commit) would then
+    # refuse the NEXT cship. Instrumentation must never block a ship.
+    mkdir -p "$HOME/.cline" 2>/dev/null
+    printf '{"date":"%s","lane":"cline","project":"%s","branch":"%s","ci":"%s","pr":"%s"}\n' \
+      "$(date -u +%F)" "$proj" "$branch" "$result" "${url:-}" >> "$HOME/.cline/run-ledger.jsonl" 2>/dev/null || true
   fi
 }
